@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# Array of specific times to execute the scripts (in 24-hour format with minutes)
+EXECUTION_TIMES=("02:30" "05:30" "08:30" "11:30" "14:30" "17:30" "20:30" "23:30")
+
+# Path to the first script
+SCRIPT1_PATH="/path/to/script1.sh"
+
+# Path to the second script
+SCRIPT2_PATH="/path/to/script2.sh"
+
+echo "Wait until next execution time..."
+echo
+# Infinite loop
+while true; do
+
+  # Check if the current time matches any of the execution times
+  execution_flag=false
+  for execution_time in "${EXECUTION_TIMES[@]}"; do
+    if [[ "$execution_time" == "$(date +"%H:%M")" ]]; then
+      execution_flag=true
+      break
+    fi
+  done
+
+  if "$execution_flag"; then
+    # Display the execution timestamp
+    echo -e "Execution timestamp: $(date +"%m-%d %H:%M")"
+    
+    # Execute the first script
+    echo "Executing Script 1..."
+    bash "$SCRIPT1_PATH"
+    
+    # Execute the second script
+    echo "Executing Script 2..."
+    bash "$SCRIPT2_PATH"
+    
+    break
+  fi
+
+  # Calculate the time until the next execution time
+  current_time=$(date +"%H:%M")
+  next_execution_time=""
+  for execution_time in "${EXECUTION_TIMES[@]}"; do
+    if [[ "$execution_time" > "$current_time" ]]; then
+      next_execution_time=$execution_time
+      break
+    fi
+  done
+
+  if [[ -n "$next_execution_time" ]]; then
+    # Calculate the waiting time until the next execution time
+    current_timestamp=$(date +%s)
+    next_execution_timestamp=$(date -d "$(date +"%Y-%m-%d") $next_execution_time" +%s)
+    sleep_duration=$((next_execution_timestamp - current_timestamp))
+    sleep "$sleep_duration"
+  else
+    echo "Wait until next execution time..."
+    sleep 60  # Wait for 60 seconds before checking again
+  fi
+done
