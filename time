@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# Array of specific times to ping (in 24-hour format with minutes)
+PING_TIMES=("02:30" "05:30" "08:30" "11:30" "14:30" "17:30" "20:30" "23:30")
+
+echo "Wait until next FACMON time..."
+echo
+# Infinite loop
+while true; do
+
+  # Check if the current time matches any of the ping times
+  ping_flag=false
+  for ping_time in "${PING_TIMES[@]}"; do
+    if [[ "$ping_time" == "$(date +"%H:%M")" ]]; then
+      ping_flag=true
+      break
+    fi
+  done
+
+  if "$ping_flag"; then
+    # Display the ping timestamp
+    echo -e "${LIGHT_BLUE}Ping timestamp: $(date +"%m-%d %H:%M")${NC}"
+    break
+  fi
+
+  # Calculate the time until the next ping time
+  current_time=$(date +"%H:%M")
+  next_ping_time=""
+  for ping_time in "${PING_TIMES[@]}"; do
+    if [[ "$ping_time" > "$current_time" ]]; then
+      next_ping_time=$ping_time
+      break
+    fi
+  done
+
+  if [[ -n "$next_ping_time" ]]; then
+    # Calculate the waiting time until the next ping time
+    current_timestamp=$(date +%s)
+    next_ping_timestamp=$(date -d "$(date +"%Y-%m-%d") $next_ping_time" +%s)
+    sleep_duration=$((next_ping_timestamp - current_timestamp))
+    sleep "$sleep_duration"
+  else
+    echo "Wait until next FACMON time..."
+    sleep 60  # Wait for 60 seconds before checking again
+  fi
+done
