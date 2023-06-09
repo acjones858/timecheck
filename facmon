@@ -34,8 +34,7 @@ while true; do
     # Execute the second script
     echo "Executing Script 2..."
     bash "$SCRIPT2_PATH"
-    
-    break
+   
   fi
 
   # Calculate the time until the next execution time
